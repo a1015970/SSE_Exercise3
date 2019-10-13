@@ -45,9 +45,10 @@ def analyze_git_commit(repo_path, fixing_commit):
     repo = Repo(repo_path)
     HEAD = fixing_commit
     PREV = fixing_commit + '^'
+    print(repo_path + '  ' + fixing_commit)
         
     # get commit message
-    out1 = repo.git.log(-1, '--pretty=%s')
+    out1 = repo.git.log(HEAD, -1, '--pretty=%s')
     print("[A] Commit message: %s"%out1)
 
     # get number of files affected by commit
@@ -89,32 +90,45 @@ def analyze_git_commit(repo_path, fixing_commit):
     # number of days between fixing commit and previous commit
     print("[H] Number of days between fixing commit and previous commit: ")
     for file in repo.git.diff('--name-only', HEAD, PREV).splitlines():
-        modTimes = repo.git.log(-2, '--pretty=%ct', file).splitlines();
-        if len(modTimes) == 2:
-            print("  %s:  %.1f"%(file, (float(modTimes[0])-float(modTimes[1]))/86400)) # diff, convert sec to days
-        else:
-            print("  %s:  N/A (new file)"%file) # diff, convert sec to days
+        try:
+            modTimes = repo.git.log(HEAD, PREV, -2, '--pretty=%ct', file).splitlines();
+            if len(modTimes) == 2:
+                print("  %s:  %.1f"%(file, (float(modTimes[0])-float(modTimes[1]))/86400)) # diff, convert sec to days
+            else:
+                print("  %s:  N/A (new file)"%file)
+        except:
+            print("  %s:  N/A (no file)"%file)
             
     # number of times each file has been modified
     print("[I] Number of time each file has been modified (including fixing commit): ")
     for file in repo.git.diff('--name-only', HEAD, PREV).splitlines():
-        modLog = repo.git.log('--follow', '--pretty=oneline', file).splitlines();
-        print("  %s:  %d"%(file, len(modLog)))
+        try:
+            modLog = repo.git.log(HEAD, PREV, '--follow', '--pretty=oneline', file).splitlines();
+            print("  %s:  %d"%(file, len(modLog)))
+        except:
+            print("  %s:  N/A"%file)
+
         
     # which developers have modified each file
     print("[J] Which developers have modified each file since its creation: ")
     for file in repo.git.diff('--name-only', HEAD, PREV).splitlines():
         print("  %s"%file)
-        auths = repo.git.log('--follow', '--pretty=%aN', file).splitlines()
-        for auth in set(auths):
-            print("    %s"%auth)
+        try:
+            auths = repo.git.log(HEAD, PREV, '--follow', '--pretty=%aN', file).splitlines()
+            for auth in set(auths):
+                print("    %s"%auth)
+        except:
+            print("    N/A")
     
     # how many commits have each of these developers made
     print("[K] How many commits has each of these author made: ")
     allAuths = []
     for file in repo.git.diff('--name-only', HEAD, PREV).splitlines():
-        allAuths += repo.git.log('--follow', '--pretty=%aN', file).splitlines()
+        try:
+            allAuths += repo.git.log(HEAD, PREV, '--follow', '--pretty=%aN', file).splitlines()
+        except:
+            pass
     allAuths = list(set(allAuths)) # unique
-    log = repo.git.log('--pretty=%aN')
+    log = repo.git.log(HEAD, PREV,'--pretty=%aN')
     for auth in allAuths:
         print("  %s: %d"%(auth, len(re.findall(auth,log))))

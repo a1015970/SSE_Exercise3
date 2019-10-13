@@ -97,7 +97,7 @@ def find_vcc(repo_path, fixing_commit):
 
     commitsFound = []
     for file in files:
-        print('File: ' + file)
+        ##print('File: ' + file)
         # check file exists in PREV - if not then skip
         # read in the previous version of the file
         try:
@@ -110,25 +110,25 @@ def find_vcc(repo_path, fixing_commit):
         difflines = repo.git.diff('-U0',PREV,HEAD,file).splitlines()
         summlines = summary_lines(difflines)
         for line in summlines:
-            #print(line)
+            ##print(line)
             # parse the numbers
             (delStart, delLength, addStart, addLength) = parse_summary(line)
-            print("delStart, delLength, addStart, addLength: ",delStart, delLength, addStart, addLength)
+            ##print("delStart, delLength, addStart, addLength: ",delStart, delLength, addStart, addLength)
             # if there are deleted lines, find the blamed commit(s)
             if delLength > 0:
                 blames = repo.git.blame('-w','--date=unix','-e','-f','-L '+str(delStart) + ',' + str(delStart + delLength - 1), PREV, file).splitlines()
                 commit = find_most_recent_commit(blames)
-                print('Commit: '+commit)
+                ##print('Commit: '+commit)
                 commitsFound += [commit]*delLength # add one for each line deleted
             # if there are added lines, find the enclosing scope and then find the commits
             if addLength > 0:
                 (scopeStart, scopeEnd) = find_enclosing_scope(delStart, delLength, addStart, addLength, fileContents)
                 blames = repo.git.blame('-w','--date=unix','-e','-f','-L '+str(scopeStart) + ',' + str(scopeEnd), PREV, file).splitlines()
                 commit = find_most_recent_commit(blames)
-                print('Commit: '+commit)
+                ##print('Commit: '+commit)
                 commitsFound += [commit]*addLength # add once for each line added
                 
     # now find the most common entry in commitsFound
     mostCommonCommit = max(set(commitsFound), key=commitsFound.count)
-    print(commitsFound)
+    ##print(commitsFound)
     return mostCommonCommit

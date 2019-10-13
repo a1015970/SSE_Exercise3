@@ -12,6 +12,7 @@ Created on Fri Sep  6 22:45:02 2019
 @author: Chris Crouch - a1015970
 """
 import find_vcc
+import analyze_git_commit
 from git import Repo, RemoteProgress
 import os
 
@@ -32,6 +33,8 @@ print("\n\n", repo.git.remote('get-url','origin'))
 
 vcc = find_vcc.find_vcc(local_link, fixing_commit)
 print("\nVCC is ", vcc)
+analyze_git_commit.analyze_git_commit(local_link, vcc)
+
 
 #%%
 
@@ -47,6 +50,7 @@ print("\n\n", repo.git.remote('get-url','origin'))
 
 vcc = find_vcc.find_vcc(local_link, fixing_commit)
 print("\nVCC is ", vcc)
+analyze_git_commit.analyze_git_commit(local_link, vcc)
 
 #%%
 local_link = "../jackson-databind"
@@ -61,4 +65,5 @@ print("\n\n", repo.git.remote('get-url','origin'))
 
 vcc = find_vcc.find_vcc(local_link, fixing_commit)
 print("\nVCC is ", vcc)
+analyze_git_commit.analyze_git_commit(local_link, vcc)
 
